@@ -20,32 +20,30 @@ class Fix(object):
     song name and artist. 
     '''
 
-
-
     def __init__(self):
         self.bad_words = [ 'full album'
-                    , 'full version'
-                    , 'full mixtape'
-                    , 'full album stream'
-                    , 'whole album'
-                    , 'official video'
-                    , 'official music video'
-                    , 'official audio'
-                    , 'hq audio'
-                    , 'lyric video'
-                    , 'hq'
-                    , 'hd'
-                    , 'good quality'
-                    , 'high quality'
-                    , 'teaser'
-                    , 'flac'
-                    , 'with lyrics'
-                    , 'lyrics'
-                    , 'original movie soundtrack'
-                    , 'extended version'
-                    , 'original speed master'
-                    , 'original mix'
-                    , 'live']
+                         , 'full version'
+                         , 'full mixtape'
+                         , 'full album stream'
+                         , 'whole album'
+                         , 'official video'
+                         , 'official music video'
+                         , 'official audio'
+                         , 'hq audio'
+                         , 'lyric video'
+                         , 'hq'
+                         , 'hd'
+                         , 'good quality'
+                         , 'high quality'
+                         , 'teaser'
+                         , 'flac'
+                         , 'with lyrics'
+                         , 'lyrics'
+                         , 'original movie soundtrack'
+                         , 'extended version'
+                         , 'original speed master'
+                         , 'original mix'
+                         , 'live']
 
         self.all_artists = db.get_all_artists()
 
@@ -96,7 +94,7 @@ class Fix(object):
         self.youtube_title = re.sub('[#\/:*?"<>|]', '', self.youtube_title)
         
         
-    def split_song_via_delim(self):
+    def split_song_via_delim(self, youtube_title):
         '''
         We take the youtube title and we attempt to split it into artist and album. 
         Chance of success? High. Chance of perfection? Zero
@@ -113,32 +111,30 @@ class Fix(object):
         title_delimiters = ['-', '//', '.']
         
         for delim in title_delimiters:
-            if len(self.youtube_title.split(delim)) == 2:
-                self.split_youtube_title = self.youtube_title.split(delim)
-                self.split_youtube_title = [e.strip() for e in self.split_youtube_title]
-                self.title_split = True
-                break
-       
-    def sort_title(self):
+            if len(youtube_title.split(delim)) == 2:
+                split_youtube_title = youtube_title.split(delim)
+                split_youtube_title = [titlecase(e.strip()) for e in split_youtube_title]
+                return split_youtube_title
+        return [youtube_title, '']
+
+    def sort_title(self, split_youtube_title):
         '''
         This function compares each value in the split youtube title to our list
-        of known artists. It finds the best comparisson and if that comparisson is 
+        of known artists. It finds the best comparison and if that comparison is
         greater than 0.7 (chosen by inspection), it sets self.artist as that matched
-        artist. If no comparission is found then the self.artist is chosen as the 
+        artist. If no comparison is found then the self.artist is chosen as the
         first element of the split title, and the song_name as the second element. 
         '''
-        left_scores  = [ SM(None, self.split_youtube_title[0], e).ratio() for e in self.all_artists ]
-        right_scores = [ SM(None, self.split_youtube_title[1], e).ratio() for e in self.all_artists ]
+        left_scores = [SM(None, split_youtube_title[0], e).ratio() for e in self.all_artists]
+        right_scores =[SM(None, split_youtube_title[1], e).ratio() for e in self.all_artists]
         if max(left_scores) < max(right_scores) and max (left_scores + right_scores) > 0.7:
-            self.artist = self.split_youtube_title[1]
-            self.song_name = self.split_youtube_title[0]
+            return [split_youtube_title[1], split_youtube_title[0]]
         else:
-            self.artist = titlecase(self.split_youtube_title[0])
-            self.song_name = titlecase(self.split_youtube_title[1])
+            return [split_youtube_title[0], split_youtube_title[1]]
 
-    def split_song_via_artist(self):
+    def split_song_via_artist(self, youtube_title):
         # NEEDS WORK
-        # IF POSSIBLE_ARTISTS > 1
+        # We need to allow for key words like ft..
         '''
         If we are unable to split a song via a delimiter, we attempt 
         to split the song via a known artist. To do this, we get all our
@@ -147,24 +143,12 @@ class Fix(object):
         the artist. If we split the title with more than one artist, then we know
         the artist if and only if all other artists are a subset of a single artist.
         '''
-        possible_artists = [ e.lower() for e in self.all_artists if len(self.youtube_title.split(e.lower())) == 2 ]
-        if len(possible_artists) == 1:
-            self.title_split = True
-            self.artist = titlecase(possible_artists[0] +  min(self.youtube_title.split(possible_artists[0]), key = len )).strip()
-            self.song_name = titlecase(max(self.youtube_title.split(possible_artists[0]), key = len )).strip()
+        possible_artists = [ e.lower() for e in self.all_artists if len(youtube_title.lower().split(e.lower())) == 2 ]
+        if len(possible_artists) > 0:
+            artist = max(possible_artists, key=len)
+            song_name = max(youtube_title.lower().split(artist), key=len).strip()
+            return[titlecase(artist), titlecase(song_name)]
+        else:
+            return[youtube_title, '']
 
 
-'''
-setup = MusicDB()
-setup.create_database_structure() 
-setup.insert_artist_data('Kylie', 'album_art\\Kylie.jpg')
-            
-test = Fix()
-song_info = test.fix_title('Adele - Hello(2015) High Quality')
-print song_info
-all_artists = test.get_all_artists()
-print all_artists
-song_info = test.fix_title('Kylie Slow')
-print song_info
-'''
-    

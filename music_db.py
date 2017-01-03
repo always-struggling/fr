@@ -84,7 +84,7 @@ class MusicDB(object):
         path will be inserted later on without an artist. Then when we try to split
         by artist in fix_title.py, we get an empty seperator errored_songs
         '''
-        self.insert_artist_data('Free Riddims', 'album_art\free_riddims_default.jpg')
+        self.insert_artist_data('Free Riddims', 'album_art_free_riddims_default.jpg')
         
     
     def insert_errored_data(self, url, youtube_title, playlist):

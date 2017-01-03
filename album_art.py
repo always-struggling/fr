@@ -7,14 +7,7 @@ from PIL import Image
 import urllib as dwn
 import requests
 
-
-db = MusicDB()
-############################################
-####             CLASSES                ####
-############################################
-
 class Art(object):
-
     '''
     This class contains the functions for retrieving
     album art for an artist
@@ -22,8 +15,9 @@ class Art(object):
 
     def __init__(self):
 
-        self.default_image = 'album_art\\free_riddims_default.jpg'
+        db = MusicDB()
         self.all_art = dict(db.get_all_art())
+        self.default_image = 'album_art\\free_riddims_default.jpg'
 
 
     def get_album_art(self, artist):
@@ -39,12 +33,10 @@ class Art(object):
         try:
             self.image_path = self.all_art[self.artist]
         except:
-            self.image_path = None
+            self.download_art()
 
         if self.image_path is None:
-            self.download_art()
-            if self.image_path is None:
-                self.image_path = self.default_image
+           self.image_path = self.default_image
         return self.image_path
 
 

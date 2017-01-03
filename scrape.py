@@ -100,7 +100,7 @@ class Scrape(object):
         
 if __name__ == '__main__':
     scrape = Scrape()
-    playlists = scrape.get_all_playlists('UC1eOi_4jVFP5IPnjogNiAWg')
+    playlists = scrape.get_all_playlists('UCztBf-iBKrDBYw4BzNK5B1Q')
     print (playlists)
 
 
