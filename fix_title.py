@@ -56,28 +56,16 @@ class Fix(object):
             - If we were unable to split the song via a delimiter
               we attempt to split it by a known artist
         '''
-        self.youtube_title = youtube_title
-        self.song_name = None
-        self.artist = None
-        self.title_split = False
-        self.split_youtube_title = None
-        self.remove_bad_words()
 
-        self.split_song_via_delim()
-
-
-        if self.title_split:
-            self.sort_title()
+        youtube_title = self.remove_bad_words(youtube_title)
+        split_title = self.split_song_via_delim(youtube_title)
+        if split_title[1] != '':
+            split_title = self.sort_title(split_title)
         else:
-            self.split_song_via_artist()
-
-        if self.title_split:
-            return (self.song_name, self.artist)
-        else:
-            return (self.youtube_title, '')
-
+            split_title = self.split_song_via_artist(youtube_title)
+        return split_title
         
-    def remove_bad_words(self):
+    def remove_bad_words(self, youtube_title):
         '''
         This function removes all bad words / characters / dates from the
         youtube title, and lowers it
@@ -85,13 +73,15 @@ class Fix(object):
 
                         
         '''Remove words (and any surrounding brackets) if they are in the bad words list''' 
-        self.youtube_title = re.sub(r'([[|(]?(' + '|'.join(self.bad_words) + ').*[]|)]?)|(full)|(single)', '', self.youtube_title.lower() )    
+        youtube_title = re.sub(r'([[|(]?(' + '|'.join(self.bad_words) + ').*[]|)]?)|(full)|(single)', '', youtube_title.lower() )
         
         '''Remove any set of digits that could resemble a year'''
-        self.youtube_title = re.sub(r'[[|(](1|2)\d{3}[]|)]','', self.youtube_title)
+        youtube_title = re.sub(r'[[|(](1|2)\d{3}[]|)]','', youtube_title)
         
         '''Remove any characters that cause problems when saving the file'''
-        self.youtube_title = re.sub('[#\/:*?"<>|]', '', self.youtube_title)
+        youtube_title = re.sub('[#\/:*?"<>|]', '', youtube_title)
+
+        return youtube_title
         
         
     def split_song_via_delim(self, youtube_title):

@@ -19,6 +19,18 @@ class Scrape(object):
     playlist. 
     '''
 
+    def set_youtube_songs(self, user_id):
+        '''
+        This scrapes the entire youtube library of the user
+        :param user_id: The youtube_id for the user
+        :return: a nested list of [youtube_title, youtube_url, playlist]
+        '''
+        playlists = self.get_all_playlists(user_id)
+        songs = []
+        for playlist in playlists:
+            songs = songs + [e + [playlist[1]] for e in self.get_all_songs(playlist[0])]
+        return songs
+
     def find_load_more_url(self, soup):
         '''
         Youtube uses Javascript to load additonal artists. 
@@ -42,7 +54,7 @@ class Scrape(object):
         playlist_urls = [e.contents[1].find_all('a', {'class':'yt-uix-sessionlink'})[0].get('href')
                                 for e in playlist_html]
         playlist_urls = [e.replace('/playlist?list=', '') for e in playlist_urls]
-        playlists = list(zip(playlist_urls, playlist_titles))
+        playlists = [list(e) for e in zip(playlist_urls, playlist_titles)]
         return playlists
         
         
@@ -75,7 +87,7 @@ class Scrape(object):
         song_urls = [re.findall('^[^&]*', e)[0] for e in song_urls]
         song_urls = [e.replace('/watch?v=','') for e in song_urls]
         song_titles = [e.text[7:len(e)-6] for e in song_html]
-        songs = list(zip(song_urls, song_titles))
+        songs = [list(e) for e in zip(song_urls, song_titles)]
         return songs  
 
     def get_all_songs(self, url):
