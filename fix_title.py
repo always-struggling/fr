@@ -63,7 +63,7 @@ class Fix(object):
             split_title = self.sort_title(split_title)
         else:
             split_title = self.split_song_via_artist(youtube_title)
-        return split_title
+        return split_title[0], split_title[1]
         
     def remove_bad_words(self, youtube_title):
         '''

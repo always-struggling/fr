@@ -138,7 +138,7 @@ class MusicDB(object):
         inserted into the database. 
         '''
         self.connect()
-        self.c.execute('''select artist from artists''')  
+        self.c.execute('''select artist from artists order by artist''')
         self.all_artists = self.c.fetchall()
         self.all_artists = [e[0] for e in self.all_artists] 
         # if artists is null we cause problems when trying to iterate

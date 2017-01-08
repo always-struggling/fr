@@ -38,9 +38,7 @@ class Download(object):
         
     def download_song(self):
         '''
-        shutil.copyfile('test.mp3', self.tmp_path)
-        self.song_downloaded = True        
-        This function is downloads the song video
+        This function is downloads the song
         '''
         options = {
             'format': 'bestaudio/best',
@@ -53,7 +51,7 @@ class Download(object):
             
         with youtube_dl.YoutubeDL(options) as ydl:
             try:
-                ydl.download(['http://www.youtube.com/watch?v=' + self.url])
+                ydl.download(['http://www.youtube.com/watch?v=' + url])
                 self.song_downloaded = True
             except:
                 self.song_downloaded = False

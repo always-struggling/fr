@@ -7,6 +7,7 @@ from PIL import Image
 import urllib as dwn
 import requests
 
+
 class Art(object):
     '''
     This class contains the functions for retrieving
@@ -19,7 +20,6 @@ class Art(object):
         self.all_art = dict(db.get_all_art())
         self.default_image = 'album_art\\free_riddims_default.jpg'
 
-
     def get_album_art(self, artist):
         '''
         This function is the top level function for retrieving
@@ -29,43 +29,67 @@ class Art(object):
         internet. If we are still unable to find one it returns the default
         free riddims album art.
         '''
-        self.artist = artist
         try:
-            self.image_path = self.all_art[self.artist]
+            image_path = self.all_art[artist]
         except:
-            self.download_art()
+            image_url, image_url_found = self.find_art2(artist)
+            if image_url_found:
+                self.download_image(image_url, artist.replace(' ', '_').lower())
+                self.resize_image('album_art\\' + artist.replace(' ', '_').lower() + '.jpg')
+                image_path = 'album_art\\' + artist.replace(' ','_').lower() + '.jpg'
+            else:
+                image_path = self.default_image
+        return image_path
 
-        if self.image_path is None:
-           self.image_path = self.default_image
-        return self.image_path
-
-
-    def download_art(self):
+    def find_art1(self, artist):
         '''
         This function attempts to scrape an album cover from
-        the website www.covermytumes.
+        the website www.covermytumes.com
         '''
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-        url = 'http://www.covermytunes.com/search.php?search_query=' + self.artist.replace(' ', '+') +'&x=0&y=0'
-        html = requests.get(url, headers = headers)
+        url = 'http://www.covermytunes.com/search.php?search_query=' + artist.replace(' ', '+') + '&x=0&y=0'
+        html = requests.get(url, headers=headers)
         soup = BeautifulSoup(html.content, 'html.parser')
         if len(soup.find_all('h2')) == 0:
             image_urls = soup.find_all('img')
-            image_urls = [(e.get('src'), e.get('height'), e.get('width')) for e in image_urls ]
-            self.image_path = 'album_art\\' + self.artist + '.jpg'
-            dwn.urlretrieve(image_urls[0][0], self.image_path)
-            self.resize_image()
+            image_urls = [(e.get('src'), e.get('height'), e.get('width')) for e in image_urls]
+            image_url = image_urls[0][0]
+            image_url_found = True
+        else:
+            image_url = ''
+            image_url_found = False
+        return image_url, image_url_found
 
-    def resize_image(self):
+    def find_art2(self, artist):
         '''
-        The purpse of this function is to resize the image taken
+        This function attempts to scrape an album cover from
+        the website www.seekacover.com
+        '''
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        url = 'http://www.seekacover.com/cd/' + artist.replace(' ', '+')
+        html = requests.get(url, headers=headers)
+        soup = BeautifulSoup(html.content, 'html.parser')
+        image_urls = [e.get('src') for e in soup.find_all('img')[2:]]
+        if len(image_urls) > 2:
+            image_url = image_urls[0]
+            image_found = True
+        else:
+            image_url = ''
+            image_found = False
+        return image_url, image_found
+
+    def download_image(self, image_url, artist):
+        dwn.urlretrieve(image_url, 'album_art\\' + artist.lower().replace(' ','_') + '.jpg')
+
+    def resize_image(self, image_path):
+        '''
+        The purpose of this function is to resize the image taken
         from the internet and resize it to the dimensions 300 x 300
         '''
-        img = Image.open(self.image_path )
-        img.size
+        img = Image.open(image_path)
         img = img.resize((300,300), Image.ANTIALIAS)
-        img.size
-        img.save(self.image_path ,'JPEG')
+        img.save(image_path, 'JPEG')
 
 
 
