@@ -29,6 +29,9 @@ class Art(object):
         internet. If we are still unable to find one it returns the default
         free riddims album art.
         '''
+        if artist == '':
+            return self.default_image
+
         try:
             image_path = self.all_art[artist]
         except:

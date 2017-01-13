@@ -8,7 +8,7 @@ from fix_title import Fix
 from album_art import Art
 from download import Download
 import os
-import eyed3
+from mutagen.easyid3 import EasyID3
 
 
 
@@ -132,12 +132,14 @@ class TestArt(unittest.TestCase):
         art = Art()
         art.download_image('https://images-na.ssl-images-amazon.com/images/I/31inGXqqWsL.jpg', 'bowie')
         self.assertEqual(os.path.isfile('album_art\\bowie.jpg'), True)
+        os.remove('album_art\\bowie.jpg')
 
     def test_resize_image(self):
         art = Art()
-        art.resize_image('album_art\\bowie.jpg')
+        art.resize_image('album_art\\free_riddims_default.jpg')
         img = Image.open('album_art\\bowie.jpg')
         self.assertEqual(img.size, (300, 300))
+        os.remove('album_art\\bowie.jpg')
 
     def test_get_image_known(self):
         art = Art()
@@ -155,7 +157,6 @@ class TestArt(unittest.TestCase):
         art = Art()
         image_path = art.get_album_art('dslfknsdlg')
         self.assertEqual(image_path, 'album_art\\free_riddims_default.jpg')
-        os.remove('album_art\\free_riddims_default.jpg')
 
 
 class TestDownload(unittest.TestCase):
@@ -170,7 +171,12 @@ class TestDownload(unittest.TestCase):
         shutil.copy('music_test\\test.mp3', 'test_append.mp3')
         filename = os.getcwd() + '\\test_append.mp3'
         art = 'C:\\Users\\User\\Documents\\python\\projects\\fr\\album_art\\free_riddims_default.jpg'
+        appended_mp3 = EasyID3(filename)
         dwn.append_tags(filename, 'Test Song', 'Test Artist', 'Test Playlist', art)
+        self.assertEqual(appended_mp3['title'][0], 'Test Song')
+        self.assertEqual(appended_mp3['artist'][0], 'Test Artist')
+        self.assertEqual(appended_mp3['album'][0], 'Test Playlist')
+
         os.remove(filename)
 
     def test_3_move_song(self):
