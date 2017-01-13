@@ -137,9 +137,8 @@ class TestArt(unittest.TestCase):
     def test_resize_image(self):
         art = Art()
         art.resize_image('album_art\\free_riddims_default.jpg')
-        img = Image.open('album_art\\bowie.jpg')
+        img = Image.open('album_art\\free_riddims_default.jpg')
         self.assertEqual(img.size, (300, 300))
-        os.remove('album_art\\bowie.jpg')
 
     def test_get_image_known(self):
         art = Art()
